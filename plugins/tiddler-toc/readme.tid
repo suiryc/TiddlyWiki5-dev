@@ -1,0 +1,65 @@
+title: $:/plugins/cyrius/tiddler-toc/readme
+
+Tiddler's Table of Contents.
+
+<<tiddler-toc min-entries:2>>
+
+! Description
+This plugin generates a ~ToC inside a tiddler.<br>
+The generated ~ToC entries list the headings found in the tiddler, each entry being preceded by a number representing its level and index (e.g.: //1.2.1//). Those numbers link to the corresponding heading.<br>
+Found headings are also altered to display a link back to the ~ToC.
+<p/>
+The ~ToC does not reference tiddlers embedded using the <<.def tabs>> macro or ''reveal'' widget. Transcluded tiddlers are however taken into account, and tiddlers inside tabs can have their ~ToC (inside the tab).
+<p/>
+The ~ToC is either generated at a given target, or at the beginning of the tiddler. If there are less headings than a given minimum (default being 2), the ~ToC is not displayed.<br>
+The ~ToC title can be clicked to hide/display the ~ToC content.
+
+
+! Notes
+The plugin redefines some internal rendering code in order to post-process tiddler (HTML) content.<br>
+It searches for the HTML headings (`h1` to `h6` tags) which are converted to ~ToC entries, preserving inner text format.
+<p/>
+Using the macro in a transcluded tiddler will affect (location and parameters) the ~ToC in the parent tiddler.
+
+
+! Usage
+The plugin automatically processes rendered tiddlers.
+
+
+!! Parameters
+The following configuration parameters are available:
+
+* [[title-filter|$:/config/tiddler-toc/title-filter]]: regular expression a tiddler title has to match to generate its ~ToC
+** the default is to exclude system tiddlers (title starting with `$:`)
+* [[min-entries|$:/config/tiddler-toc/min-entries]]: minimum number of entries needed to display the ~ToC
+** can be specified as macro parameter
+** default value is `2`
+
+!! Macro
+The <<.def tiddler-toc>> macro can be used to force ~ToC generation (regardless of <<.param title-filter>>) at the given location, and override the default <<.param min-entries>>.
+
+
+!! Example
+To generate the ~ToC at a given location and override <<.param min-entries>>:
+
+```
+Beginning of the tiddler.
+...
+
+Where to generate the ToC:
+<<tiddler-toc min-entries:3>>
+
+Tiddler continues ...
+```
+
+
+! Styling
+~ToC content uses some configurable [[CSS classes|$:/plugins/cyrius/tiddler-toc/styles]]:
+
+* `tw_ttoc`: ~ToC
+* `tw_ttoc_title`: title (`Table of Contents`)
+* `tw_ttoc_entries`: entries
+* `tw_ttoc_level`: sub-level entry indentation
+* `tw_ttoc_entry`: entry
+* `tw_ttoc_id`: entry number
+* `tw_ttoc_top`: heading link back to the ~ToC

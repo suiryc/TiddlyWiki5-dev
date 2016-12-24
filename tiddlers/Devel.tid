@@ -1,0 +1,40 @@
+created: 20161224143217018
+creator: Julien Coloos
+modified: 20161224151343175
+modifier: Julien Coloos
+tags: 
+title: Devel
+type: text/vnd.tiddlywiki
+
+! Plugins
+
+!! Tiddler's Table of Contents
+~TiddlyWiki5 provides a macro to create a Table of Contents linking tiddlers through manually added tags.<br>
+But there is no way to generate a ~ToC of the content of a tiddler (you are supposed to manually split your tiddler, add the tags and use the provided macro).
+<p/>
+So here is a [[Tiddler's Table of Contents plugin|$:/plugins/cyrius/tiddler-toc]].
+
+!! Development notes
+
+* Install [[nodejs|https://nodejs.org/]]
+* Install the tiddlywiki module
+```
+npm install -g tiddlywiki
+```
+* Clone the git repository inside the generated folder
+```
+git clone git@github.com:suiryc/TiddlyWiki5-dev.git
+```
+* Initialize an edition in server mode (in an empty folder, then move files inside the cloned git folder)
+```
+tiddlywiki TiddlyWiki5-dev --init server
+```
+* Run the edition in server mode
+```
+tiddlywiki TiddlyWiki5-dev --server
+```
+* Create standard tiddlers through the web interface (default is [[http://127.0.0.1:8080/]]), or plugin files through preferred editor
+* Generate an `index.html` file packaging everything, ready to be deployed inside the `gh-pages` ~GitHub branch
+```
+tiddlywiki TiddlyWiki5-dev --build index
+```

@@ -1,0 +1,34 @@
+title: $:/plugins/cyrius/tiddler-toc/styles
+tags: $:/tags/Stylesheet
+type: text/plain
+
+.tw_ttoc {
+  background-color: #F8F8F8;
+  padding: 10px;
+  border: 1px #CCCCCC solid;
+}
+
+.tw_ttoc_title {
+  text-align: center;
+  font-weight: bold;
+}
+
+.tw_ttoc_entries {
+  margin: 10px 0px 0px 0px;
+}
+
+.tw_ttoc_entry {
+}
+
+.tw_ttoc_level {
+  padding-left: 20px;
+}
+
+.tw_ttoc_id {
+  margin-right: 6px;
+}
+
+.tw_ttoc_top {
+  float: right;
+  font-size: 0.5em;
+}

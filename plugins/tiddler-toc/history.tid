@@ -1,0 +1,11 @@
+title: $:/plugins/cyrius/tiddler-toc/history
+
+<<tiddler-toc>>
+
+!! v2.0.0 (2016-12-24)
+Initial release on TiddlyWiki5.<br>
+Based on original code for TiddlyWikiClassic.
+
+Changes:
+
+* ~ToC is now generated automatically without needing to drop a macro inside targeted tiddlers

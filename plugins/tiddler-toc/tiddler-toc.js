@@ -60,7 +60,7 @@ function getWidgetNode(widget) {
   if ((typeof tiddlerTitle !== "string") || (tiddlerTitle == "")) return undefined;
 
   var node = widget.parentDomNode;
-  // We need a real parent DOM node to work with. It is expected to be a 'div' or 'p' element.
+  // We need a real parent DOM node to work with. It is expected to be a "div" or "p" element.
   if (!node || node.isTiddlyWikiFakeDom || ((node.tagName != "DIV") && (node.tagName != "P"))) return undefined;
 
   var isTocOn = node["toc-on"];
@@ -78,7 +78,7 @@ function getWidgetNode(widget) {
   }
 
   // Nothing to do if ToC was already done.
-  if (node['toc-done']) return undefined;
+  if (node["toc-done"]) return undefined;
 
   // We exclude transcluded tiddlers (parent widget is a tiddler), as parent tiddler will take care of building the ToC.
   if (TiddlerWidget.prototype.isPrototypeOf(widget.parentWidget)) return undefined;
@@ -95,10 +95,13 @@ function getWidgetNode(widget) {
 // Get the actual node in which to generate the ToC.
 function getBody(node, isTcReveal) {
   // It must have the "tc-reveal" class (or be a child of an element that has it) and have children.
-  // As a special case for plugin tiddlers, we also check there is more than one child or that it is not a 'p' element.
+  // As a special case for special tiddlers, we also check there is more than one child or that it is not a "p" or "div" element:
+  //  - plugin tiddlers have a wrapper "p" child
+  //  - some processed tiddlers (e.g. by TWC parser) have a wrapper "div" child
   if (!node) return node;
   isTcReveal |= $tw.utils.hasClass(node, "tc-reveal");
-  if (isTcReveal && node.firstElementChild && ((node.children.length != 1) || (node.firstElementChild.tagName != "P"))) return node;
+  if (isTcReveal && node.firstElementChild &&
+    ((node.children.length != 1) || ((node.firstElementChild.tagName != "P") && (node.firstElementChild.tagName != "DIV")))) return node;
   if (!node.firstElementChild) return undefined;
   // There is currently no need to search for children other than the first when the parent does not match.
   return getBody(node.firstElementChild, isTcReveal);
@@ -124,7 +127,7 @@ function getNextHeadingId(id) {
   return id.join(".");
 }
 
-// Creates a new link 'a' element.
+// Creates a new link "a" element.
 function buildLink(text, styleClass) {
   var link = document.createElement("a");
   $tw.utils.addClass(link, "tc-tiddlylink");
@@ -167,7 +170,7 @@ function newHeadingsLevel(headingsLevel) {
 
 // Finds the ToC location if any (macro used).
 function findToC(node) {
-  // The macro generated a 'div' element with 'tw_ttoc' class, which was inserted inside a 'p' element by TiddlyWiki.
+  // The macro generated a "div" element with "tw_ttoc" class, which was inserted inside a "p" element by TiddlyWiki.
   var children = node.getElementsByTagName("P");
   for (var i=0; i<children.length; i++) {
     var child = children[i];
@@ -182,8 +185,8 @@ function findToC(node) {
 function buildToC(node) {
   // Nothing to do if we don't know where to generate the ToC, or if it was already done.
   node = getBody(node);
-  if ((node === undefined) || node['toc-done']) return;
-  node['toc-done'] = true;
+  if ((node === undefined) || node["toc-done"]) return;
+  node["toc-done"] = true;
 
   var isTocOn = node["toc-on"];
   // Determine where to generate the ToC (first element by default), and start to build it.
@@ -231,7 +234,7 @@ function buildToC(node) {
   for (currentLevel=1; levelsUsed[currentLevel]==0; currentLevel++);
   // Initial entry 'id' (will be incremented for each new entry, and derived for sub-entries).
   var currentHeadingId = "0";
-  // Special case where the first heading is actually a sub-level (e.g. 'h2' as first heading, then 'h1').
+  // Special case where the first heading is actually a sub-level (e.g. "h2" as first heading, then "h1").
   if (headings[0]["toc-headingLevel"] != currentLevel) currentHeadingId = "1";
   for (var i=0; i<headings.length; i++) {
     var heading = headings[i];
@@ -286,7 +289,11 @@ function buildToC(node) {
   }
 
   // Insert the built ToC if necessary.
-  if (!toc.parentElement) node.insertBefore(toc, node.firstChild);
+  if (!toc.parentElement) {
+    // Insert a "br" element to separate ToC from the first child if it is not an element (usually text node in this case).
+    if (node.firstChild !== node.firstElementChild) node.insertBefore(document.createElement("br"), node.firstChild);
+    node.insertBefore(toc, node.firstChild);
+  }
 }
 
 function cloneNodeWithEvents(node) {

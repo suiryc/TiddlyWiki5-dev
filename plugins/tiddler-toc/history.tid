@@ -2,6 +2,13 @@ title: $:/plugins/cyrius/tiddler-toc/history
 
 <<tiddler-toc>>
 
+!! v2.0.2 (2016-12-24)
+
+Enhancements:
+
+* To cover more situations, actually insert the `br` separation if next node is not a `br`, `p` or heading
+
+
 !! v2.0.1 (2016-12-24)
 
 Fixes:

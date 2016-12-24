@@ -1,0 +1,20 @@
+created: 20161224174518047
+modified: 20161224174538549
+tags: 
+title: Test TWC Tiddler 2
+type: text/x-tiddlywiki
+
+[[Some link]]
+Some text
+
+! A first heading
+Dummy text 1
+
+! A //second// heading
+Dummy text 2
+
+!! Some ''more'' __heading__
+Dummy text 3
+
+!! And {{{some more}}}
+Dummy text 4

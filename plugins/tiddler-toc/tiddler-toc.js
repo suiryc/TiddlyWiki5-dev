@@ -290,8 +290,12 @@ function buildToC(node) {
 
   // Insert the built ToC if necessary.
   if (!toc.parentElement) {
-    // Insert a "br" element to separate ToC from the first child if it is not an element (usually text node in this case).
-    if (node.firstChild !== node.firstElementChild) node.insertBefore(document.createElement("br"), node.firstChild);
+    // Insert a "br" element to separate ToC from the first child if it is not a "br", "p", or heading element.
+    // (e.g. text node or "a" link)
+    var sibling = node.firstChild;
+    if ((sibling !== node.firstElementChild) || ((sibling.tagName !== "BR") && (sibling.tagName !== "DIV") && !hTag.test(sibling.tagName))) {
+      node.insertBefore(document.createElement("br"), node.firstChild);
+    }
     node.insertBefore(toc, node.firstChild);
   }
 }

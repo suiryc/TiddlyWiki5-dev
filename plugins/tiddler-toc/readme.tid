@@ -9,7 +9,7 @@ This plugin generates a ~ToC inside a tiddler.<br>
 The generated ~ToC entries list the headings found in the tiddler, each entry being preceded by a number representing its level and index (e.g.: //1.2.1//). Those numbers link to the corresponding heading.<br>
 Found headings are also altered to display a link back to the ~ToC.
 <p/>
-The ~ToC does not reference tiddlers embedded using the <<.def tabs>> macro or ''reveal'' widget. Transcluded tiddlers are however taken into account, and tiddlers inside tabs can have their ~ToC (inside the tab).
+The ~ToC does not reference tiddlers embedded using the ''tabs'' macro or ''reveal'' widget. Transcluded tiddlers are however taken into account, and tiddlers inside tabs can have their ~ToC (inside the tab).
 <p/>
 The ~ToC is either generated at a given target, or at the beginning of the tiddler. If there are less headings than a given minimum (default being 2), the ~ToC is not displayed.<br>
 The ~ToC title can be clicked to hide/display the ~ToC content.
@@ -36,11 +36,11 @@ The following configuration parameters are available:
 ** default value is `2`
 
 !! Macro
-The <<.def tiddler-toc>> macro can be used to force ~ToC generation (regardless of <<.param title-filter>>) at the given location, and override the default <<.param min-entries>>.
+The ''tiddler-toc'' macro can be used to force ~ToC generation (regardless of `title-filter`) at the given location, and override the default `min-entries`.
 
 
 !! Example
-To generate the ~ToC at a given location and override <<.param min-entries>>:
+To generate the ~ToC at a given location and override `min-entries`:
 
 ```
 Beginning of the tiddler.

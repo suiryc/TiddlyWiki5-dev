@@ -1,6 +1,6 @@
 created: 20161224143217018
 creator: Julien Coloos
-modified: 20161224151343175
+modified: 20161225205631899
 modifier: Julien Coloos
 tags: 
 title: Devel
@@ -21,7 +21,7 @@ So here is a [[Tiddler's Table of Contents plugin|$:/plugins/cyrius/tiddler-toc]
 ```
 npm install -g tiddlywiki
 ```
-* Clone the git repository inside the generated folder
+* Clone the git repository
 ```
 git clone git@github.com:suiryc/TiddlyWiki5-dev.git
 ```

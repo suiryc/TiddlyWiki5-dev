@@ -2,6 +2,13 @@ title: $:/plugins/cyrius/tiddler-toc/history
 
 <<tiddler-toc>>
 
+!! v2.0.3 (2016-12-25)
+
+Fixes:
+
+* Documentation text formatting due to macros only existing in tw5.com edition ...
+
+
 !! v2.0.2 (2016-12-24)
 
 Enhancements:

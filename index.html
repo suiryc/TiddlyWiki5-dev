@@ -119,11 +119,17 @@ Error message and password prompt
 
 <p>This <a class="tc-tiddlylink-external" href="http://tiddlywiki.com" rel="noopener noreferrer" target="_blank">TiddlyWiki</a> contains the following tiddlers:</p><p><ul>
 
+<li>$:/config/ga-tracker/options</li>
+
 <li>$:/core</li>
 
 <li>$:/DefaultTiddlers</li>
 
+<li>$:/Import</li>
+
 <li>$:/isEncrypted</li>
+
+<li>$:/plugins/cyrius/ga-tracker</li>
 
 <li>$:/plugins/cyrius/tiddler-toc</li>
 
@@ -161,7 +167,10 @@ Error message and password prompt
 <!--~~ Ordinary tiddlers ~~-->
 
 <div id="storeArea" style="display:none;">
-<div author="JeremyRuston" core-version="&gt;=5.0.0" dependents="" description="TiddlyWiki5 core" list="readme" plugin-priority="0" plugin-type="plugin" title="$:/core" type="application/json" version="5.1.13" revision="0" bag="default">
+<div __gat_events_close="0" __gat_events_search="0" bag="default" gat_enabled="1" gat_events_close="1" gat_events_edit="1" gat_events_open="1" gat_events_refresh="1" gat_events_search="1" gat_id="UA-23188652-3" gat_search_delay="1000" gat_search_min_size="2" gat_testing_enabled="0" gat_testing_mock="0" gat_title_filter="" gat_type="0" gat_url_exclude="" gat_version="1" revision="0" title="$:/config/ga-tracker/options">
+<pre></pre>
+</div>
+<div author="JeremyRuston" bag="default" core-version="&gt;=5.0.0" dependents="" description="TiddlyWiki5 core" list="readme" plugin-priority="0" plugin-type="plugin" revision="0" title="$:/core" type="application/json" version="5.1.13">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/Acknowledgements&quot;: {
@@ -7809,14 +7818,49 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div created="20161224143458567" creator="Julien Coloos" modified="20161224143500737" modifier="Julien Coloos" title="$:/DefaultTiddlers" type="text/vnd.tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224143458567" creator="Julien Coloos" modified="20161224143500737" modifier="Julien Coloos" revision="0" title="$:/DefaultTiddlers" type="text/vnd.tiddlywiki">
 <pre>Devel
 </pre>
 </div>
-<div title="$:/isEncrypted" revision="0" bag="default">
+<div status="complete" title="$:/Import">
+<pre>The following tiddlers were imported:
+
+# [[$:/config/ga-tracker/options]]</pre>
+</div>
+<div bag="default" revision="0" title="$:/isEncrypted">
 <pre>no</pre>
 </div>
-<div author="Julien Coloos" core-version="&gt;=5.0.0" dependents="" description="Tiddler's Table of Contents" list="readme history" plugin-type="plugin" source="http://julien.coloos.free.fr/TiddlyWiki5-dev/" title="$:/plugins/cyrius/tiddler-toc" type="application/json" version="2.0.3" revision="0" bag="default">
+<div author="Julien Coloos" bag="default" core-version="&gt;=5.0.0" dependents="" description="Google Analytics tracker" list="readme history" plugin-type="plugin" revision="0" source="http://julien.coloos.free.fr/TiddlyWiki5-dev/" title="$:/plugins/cyrius/ga-tracker" type="application/json" version="2.0.0b1">
+<pre>{
+    &quot;tiddlers&quot;: {
+        &quot;$:/plugins/cyrius/ga-tracker/ga-tracker.js&quot;: {
+            &quot;text&quot;: &quot;/*\\\ntitle: $:/plugins/cyrius/ga-tracker/ga-tracker.js\ntype: application/javascript\nmodule-type: startup\n\nRedefines some internal rendering code to build a Table of Contents inside tiddlers.\n\\*/\n(function(){\n\n// Export name and synchronous status\nexports.name = \&quot;ga-tracker\&quot;;\nexports.platforms = [\&quot;browser\&quot;];\nexports.synchronous = true;\n\n// (legacy) Google Analytics ga.js\nvar VERSION_GA = 0;\n// (new) Universal Analytics analytics.js\nvar VERSION_UA = 1;\n\nvar TRACKING_TYPE_EVENTS = 0;\nvar TRACKING_TYPE_PAGES = 1;\n\nvar TEMP_GA_TRACKER_STATE_TIDDLER = \&quot;$:/temp/ga-tracker/state\&quot;;\n\nvar CONFIG_GA_TRACKER_OPTIONS_TIDDLER = \&quot;$:/config/ga-tracker/options\&quot;;\nvar CONFIG_GA_TRACKER_OPTIONS_DEFAULT = {\n  enabled: 1,\n  version: VERSION_GA,\n  id: undefined,\n  url_exclude: undefined,\n  type: TRACKING_TYPE_EVENTS,\n  events: {\n    open: 1,\n    refresh: 1,\n    edit: 1,\n    close: 0,\n    search: 0\n  },\n  search_min_size: 2,\n  search_delay: 1000,\n  title_filter: undefined,\n  testing: {\n    enabled: false,\n    mock: false\n  }\n};\n\nvar trackOptions = CONFIG_GA_TRACKER_OPTIONS_DEFAULT;\n\nvar searched = undefined;\nvar searchDelayTimer;\n\nvar overriden = {};\n\n// TODO: trigger 'open' for permalink/permaview ?\n\nvar NavigatorWidget = require(\&quot;$:/core/modules/widgets/navigator.js\&quot;).navigator;\n\nexports.startup = function() {\n  loadOptions();\n\n  // Only track in non-local mode.\n  // Note: anyway the browser does not appear to load scripts when accessing local file.\n  var local = \&quot;file:\&quot; == document.location.protocol;\n  var url_excluded = trackOptions.url_exclude ? (new RegExp(trackOptions.url_exclude, \&quot;i\&quot;)).test(document.location.href) : 0;\n  var status = {\n    gat_enabled: intBoolean(trackOptions.enabled),\n    gat_id_defined: intBoolean(trackOptions.id),\n    gat_online: intBoolean(!local),\n    gat_url_allowed: intBoolean(!url_excluded),\n    gat_on: true\n  };\n  status.gat_on = status.gat_enabled &amp;&amp; status.gat_id_defined &amp;&amp; status.gat_online &amp;&amp; status.gat_url_allowed;\n\n  if (status.gat_on) installTracker();\n  else console.log(\&quot;GA tracker off\&quot;);\n\n  setFields(TEMP_GA_TRACKER_STATE_TIDDLER, status);\n};\n\nfunction intBoolean(v) {\n  return v ? 1 : 0;\n}\n\nfunction setFields(title, fields) {\n  var tiddler = $tw.wiki.getTiddler(title);\n  var fallbackFields = {title: title};\n  $tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fallbackFields, tiddler, fields, $tw.wiki.getModificationFields()));\n}\n\nfunction getField(fields, field, def) {\n  return (fields[field] !== undefined) ? fields[field] : def;\n}\n\nfunction getStringField(fields, field, def) {\n  var r = getField(fields, field, undefined);\n  if (r &amp;&amp; !r.length) r = undefined;\n  return r ? r : def;\n}\n\nfunction getIntField(fields, field, def) {\n  return parseInt(getField(fields, field, def));\n}\n\nfunction loadOptions() {\n  var tiddler = $tw.wiki.getTiddler(CONFIG_GA_TRACKER_OPTIONS_TIDDLER);\n  var fields = tiddler ? tiddler.fields : {};\n\n  trackOptions = {\n    enabled: getIntField(fields, \&quot;gat_enabled\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.enabled),\n    version: getIntField(fields, \&quot;gat_version\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.version),\n    id: getStringField(fields, \&quot;gat_id\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.id),\n    url_exclude: getStringField(fields, \&quot;gat_url_exclude\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.url_exclude),\n    type: getIntField(fields, \&quot;gat_type\&quot;, TRACKING_TYPE_EVENTS, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.type),\n    events: {\n      open: getIntField(fields, \&quot;gat_events_open\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.open),\n      refresh: getIntField(fields, \&quot;gat_events_refresh\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.refresh),\n      edit: getIntField(fields, \&quot;gat_events_edit\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.edit),\n      close: getIntField(fields, \&quot;gat_events_close\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.close),\n      search: getIntField(fields, \&quot;gat_events_search\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.search)\n    },\n    search_min_size: getIntField(fields, \&quot;gat_search_min_size\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.search_min_size),\n    search_delay: getIntField(fields, \&quot;gat_search_delay\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.events.search_delay),\n    title_filter: getStringField(fields, \&quot;gat_title_filter\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.title_filter),\n    testing: {\n      enabled: getIntField(fields, \&quot;gat_testing_enabled\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.testing.enabled),\n      mock: getIntField(fields, \&quot;gat_testing_mock\&quot;, CONFIG_GA_TRACKER_OPTIONS_DEFAULT.testing.mock)\n    }\n  };\n  if (trackOptions.title_filter) trackOptions.title_filter = new RegExp(trackOptions.title_filter);\n\n  if (trackOptions.testing.enabled) console.log(\&quot;GA tracker options\&quot;, trackOptions);\n\n  return trackOptions;\n}\n\nfunction installTracker() {\n  console.log(\&quot;GA tracker on\&quot;);\n\n  if (trackOptions.version == VERSION_UA) {\n    // GoogleAnalytics object. Needs to be global.\n    window[\&quot;GoogleAnalyticsObject\&quot;] = \&quot;ga\&quot;;\n    if (!window.ga) {\n      window.ga = function() {\n        window.ga.q.push(arguments);\n      };\n      window.ga.q = [];\n      window.ga.l = 1 * new Date();\n    }\n  } else {\n    // Google Analytics queue object. Needs to be global.\n    window._gaq = window._gaq || [];\n  }\n\n  // Initialize tracking.\n  track(\&quot;create\&quot;, trackOptions.id, \&quot;auto\&quot;);\n  track(\&quot;send\&quot;, \&quot;pageview\&quot;);\n\n  // Insert script tag to load GA.\n  var gaNode = document.createElement(\&quot;script\&quot;);\n  if (trackOptions.version == VERSION_GA) gaNode.type = \&quot;text/javascript\&quot;;\n  gaNode.async = (trackOptions.version == VERSION_UA) ? 1 : true;\n  if (trackOptions.version == VERSION_UA) gaNode.src = \&quot;//www.google-analytics.com/analytics.js\&quot;;\n  else gaNode.src = (\&quot;https:\&quot; == document.location.protocol ? \&quot;https://ssl\&quot; : \&quot;http://www\&quot;) + \&quot;.google-analytics.com/ga.js\&quot;;\n  document.body.appendChild(gaNode);\n\n  if (trackOptions.events.open || trackOptions.events.refresh) {\n    overriden[\&quot;navigator.addToStory\&quot;] = NavigatorWidget.prototype.addToStory;\n    NavigatorWidget.prototype.addToStory = trackAndAddToStory;\n  }\n  if (trackOptions.events.edit) {\n    overriden[\&quot;navigator.handleEditTiddlerEvent\&quot;] = NavigatorWidget.prototype.handleEditTiddlerEvent;\n    NavigatorWidget.prototype.handleEditTiddlerEvent = trackAndEditTiddler;\n  }\n  if ((trackOptions.type == TRACKING_TYPE_EVENTS) &amp;&amp; trackOptions.events.close) {\n    overriden[\&quot;navigator.handleCloseTiddlerEvent\&quot;] = NavigatorWidget.prototype.handleCloseTiddlerEvent;\n    NavigatorWidget.prototype.handleCloseTiddlerEvent = trackAndCloseTiddler;\n    overriden[\&quot;navigator.handleCloseAllTiddlersEvent\&quot;] = NavigatorWidget.prototype.handleCloseAllTiddlersEvent;\n    NavigatorWidget.prototype.handleCloseAllTiddlersEvent = trackAndCloseAllTiddlers;\n    overriden[\&quot;navigator.handleCloseOtherTiddlersEvent\&quot;] = NavigatorWidget.prototype.handleCloseOtherTiddlersEvent;\n    NavigatorWidget.prototype.handleCloseOtherTiddlersEvent = trackAndCloseOtherTiddlers;\n  }\n  if ((trackOptions.type == TRACKING_TYPE_EVENTS) &amp;&amp; trackOptions.events.search) {\n    overriden[\&quot;wiki.search\&quot;] = $tw.wiki.search;\n    $tw.wiki.search = trackAndSearch;\n  }\n}\n\nfunction track(action, param) {\n  // See: https://developers.google.com/analytics/devguides/collection/upgrade/reference/gajs-analyticsjs\n  // ([\&quot;_setAccount\&quot;, id]) =&gt; (\&quot;create\&quot;, id, \&quot;auto\&quot;)\n  // ([\&quot;_trackPageview\&quot;, opt_path]) =&gt; (\&quot;send\&quot;, \&quot;pageview\&quot;, opt_path)\n  // ([\&quot;_trackEvent\&quot;, category, action, opt_label, opt_value)] =&gt; (\&quot;send\&quot;, \&quot;event\&quot;, category, action, opt_label, opt_value)\n  if (trackOptions.version == VERSION_UA) {\n    if (trackOptions.testing.enabled) console.log(\&quot;Track\&quot;, Array.prototype.slice.call(arguments));\n    // We have to push the arguments\n    if (!trackOptions.testing.mock) ga.apply(ga, arguments);\n  } else {\n    var params;\n    switch (action) {\n      case \&quot;create\&quot;:\n        params = [\&quot;_setAccount\&quot;, param];\n        break;\n\n      case \&quot;send\&quot;:\n        if (param == \&quot;pageview\&quot;) {\n          params = [\&quot;_trackPageview\&quot;];\n          for (var i=2; i&lt;arguments.length; i++) params.push(arguments[i]);\n        } else if (param == \&quot;event\&quot;) {\n          params = [\&quot;_trackEvent\&quot;];\n          for (var i=2; i&lt;arguments.length; i++) params.push(arguments[i]);\n        }\n        break;\n    }\n    if (!params) params = arguments;\n    if (trackOptions.testing.enabled) console.log(\&quot;Track\&quot;, params);\n    // We have to push an array containing the arguments\n    if (!trackOptions.testing.mock) _gaq.push(params);\n  }\n}\n\nfunction testTitle(title) {\n  return !trackOptions.title_filter || trackOptions.title_filter.test(title);\n}\n\nfunction trackAndAddToStory(title, fromTitle) {\n  if ((trackOptions.events.open || trackOptions.events.refresh) &amp;&amp; testTitle(title)) {\n    var storyList = this.getStoryList();\n    var slot = storyList ? storyList.indexOf(title) : -1;\n    var trackEvent = (slot &lt; 0)\n      ? (trackOptions.events.open ? \&quot;Open\&quot; : undefined)\n      : (trackOptions.events.refresh ? \&quot;Refresh\&quot; : undefined)\n      ;\n    // Note: for real URIs, we should 'encodeURI' the title.\n    if (trackEvent) {\n      if (trackOptions.type == TRACKING_TYPE_PAGES) track(\&quot;send\&quot;, \&quot;pageview\&quot;, \&quot;/#\&quot; + title);\n      else track(\&quot;send\&quot;, \&quot;event\&quot;, \&quot;Tiddlers\&quot;, trackEvent, title);\n    }\n  }\n  return overriden[\&quot;navigator.addToStory\&quot;].apply(this, arguments);\n}\n\nfunction trackAndEditTiddler(event) {\n  if (trackOptions.events.edit) {\n    var title = event.param || event.tiddlerTitle;\n    if (testTitle(title)) {\n      if (trackOptions.type == TRACKING_TYPE_PAGES) track(\&quot;send\&quot;, \&quot;pageview\&quot;, \&quot;/#\&quot; + title);\n      else track(\&quot;send\&quot;, \&quot;event\&quot;, \&quot;Tiddlers\&quot;, \&quot;Edit\&quot;, title);\n    }\n  }\n  return overriden[\&quot;navigator.handleEditTiddlerEvent\&quot;].apply(this, arguments);\n}\n\nfunction trackAndCloseTiddler(event) {\n  if ((trackOptions.type == TRACKING_TYPE_EVENTS) &amp;&amp; trackOptions.events.close) {\n    var title = event.param || event.tiddlerTitle;\n    if (testTitle(title)) track(\&quot;send\&quot;, \&quot;event\&quot;, \&quot;Tiddlers\&quot;, \&quot;Close\&quot;, title);\n  }\n  return overriden[\&quot;navigator.handleCloseTiddlerEvent\&quot;].apply(this, arguments);\n}\n\nfunction trackAndCloseAllTiddlers(event) {\n  if ((trackOptions.type == TRACKING_TYPE_EVENTS) &amp;&amp; trackOptions.events.close) {\n    var storyList = this.getStoryList();\n    var closed = storyList ? storyList.length : 0;\n    if (closed &gt; 0) track(\&quot;send\&quot;, \&quot;event\&quot;, \&quot;Tiddlers\&quot;, \&quot;CloseAll\&quot;, undefined, closed);\n  }\n  return overriden[\&quot;navigator.handleCloseAllTiddlersEvent\&quot;].apply(this, arguments);\n}\n\nfunction trackAndCloseOtherTiddlers(event) {\n  if ((trackOptions.type == TRACKING_TYPE_EVENTS) &amp;&amp; trackOptions.events.close) {\n    var title = event.param || event.tiddlerTitle;\n    var storyList = this.getStoryList();\n    var closed = storyList ? storyList.length - 1: 0;\n    if (closed &gt; 0) track(\&quot;send\&quot;, \&quot;event\&quot;, \&quot;Tiddlers\&quot;, \&quot;CloseAll\&quot;, title, closed);\n  }\n  return overriden[\&quot;navigator.handleCloseOtherTiddlersEvent\&quot;].apply(this, arguments);\n}\n\nfunction trackAndSearch(text) {\n  if ((trackOptions.type == TRACKING_TYPE_EVENTS) &amp;&amp; trackOptions.events.search &amp;&amp; (text !== searched)) {\n    searched = text;\n    // Searching is triggered each time the value is changed.\n    // So wait for the value to remain the same during a given time before actually taking it into account.\n    // http://stackoverflow.com/a/7849308\n    clearTimeout(searchDelayTimer);\n    if (text.length &gt;= trackOptions.search_min_size) {\n      searchDelayTimer = setTimeout(function() {\n        track(\&quot;send\&quot;, \&quot;event\&quot;, \&quot;Tiddlers\&quot;, \&quot;Search\&quot;, text);\n      }, trackOptions.search_delay);\n    }\n  }\n  return overriden[\&quot;wiki.search\&quot;].apply($tw.wiki, arguments);\n}\n\n})();\n&quot;,
+            &quot;title&quot;: &quot;$:/plugins/cyrius/ga-tracker/ga-tracker.js&quot;,
+            &quot;type&quot;: &quot;application/javascript&quot;,
+            &quot;module-type&quot;: &quot;startup&quot;
+        },
+        &quot;$:/plugins/cyrius/ga-tracker/history&quot;: {
+            &quot;title&quot;: &quot;$:/plugins/cyrius/ga-tracker/history&quot;,
+            &quot;text&quot;: &quot;!! v2.0.0 (2016-12-27)\nInitial release on ~TiddlyWiki5.&lt;br&gt;\nBased on original code for ~TiddlyWikiClassic.\n\nEnhancements:\n\n* added option to filter tiddlers to track based on title name\n* added option to use newer Universal Analytics platform (analytics.js) instead of now legacy Google Analytics ones (ga.js)\n&quot;
+        },
+        &quot;$:/plugins/cyrius/ga-tracker/images/check-green&quot;: {
+            &quot;title&quot;: &quot;$:/plugins/cyrius/ga-tracker/images/check-green&quot;,
+            &quot;tags&quot;: &quot;$:/tags/Image&quot;,
+            &quot;text&quot;: &quot;&lt;!-- https://www.iconfinder.com/icons/1398912/check_circle_correct_mark_success_tick_yes_icon --&gt;\r\n&lt;svg viewBox=\&quot;0 0 600 650\&quot; width=\&quot;18pt\&quot; height=\&quot;18pt\&quot;&gt;\r\n  &lt;g&gt;\r\n    &lt;path style=\&quot;fill:#41AD49\&quot; d=\&quot;M562,396c0-141.4-114.6-256-256-256S50,254.6,50,396s114.6,256,256,256S562,537.4,562,396L562,396z    M501.7,296.3l-241,241l0,0l-17.2,17.2L110.3,421.3l58.8-58.8l74.5,74.5l199.4-199.4L501.7,296.3L501.7,296.3z\&quot;/&gt;\r\n  &lt;/g&gt;\r\n&lt;/svg&gt;\r\n&quot;
+        },
+        &quot;$:/plugins/cyrius/ga-tracker/images/cross-red&quot;: {
+            &quot;title&quot;: &quot;$:/plugins/cyrius/ga-tracker/images/cross-red&quot;,
+            &quot;tags&quot;: &quot;$:/tags/Image&quot;,
+            &quot;text&quot;: &quot;&lt;!-- https://www.iconfinder.com/icons/1398917/circle_close_cross_delete_incorrect_invalid_x_icon --&gt;\r\n&lt;svg viewBox=\&quot;0 0 600 650\&quot; width=\&quot;18pt\&quot; height=\&quot;18pt\&quot;&gt;\r\n  &lt;g&gt;\r\n    &lt;path style=\&quot;fill:#E44061\&quot; d=\&quot;M562,396c0-141.4-114.6-256-256-256S50,254.6,50,396s114.6,256,256,256S562,537.4,562,396L562,396z M356.8,396   L475,514.2L424.2,565L306,446.8L187.8,565L137,514.2L255.2,396L137,277.8l50.8-50.8L306,345.2L424.2,227l50.8,50.8L356.8,396   L356.8,396z\&quot;/&gt;\r\n  &lt;/g&gt;\r\n&lt;/svg&gt;\r\n&quot;
+        },
+        &quot;$:/plugins/cyrius/ga-tracker/readme&quot;: {
+            &quot;title&quot;: &quot;$:/plugins/cyrius/ga-tracker/readme&quot;,
+            &quot;text&quot;: &quot;\\define gatCheckGreenOrCrossRed(ref)\n&lt;$reveal tag=\&quot;span\&quot; type=\&quot;match\&quot; state=\&quot;$ref$\&quot; text=\&quot;1\&quot;&gt;{{$:/plugins/cyrius/ga-tracker/images/check-green}}&lt;/$reveal&gt;&lt;$reveal tag=\&quot;span\&quot; type=\&quot;nomatch\&quot; state=\&quot;$ref$\&quot; text=\&quot;1\&quot;&gt;{{$:/plugins/cyrius/ga-tracker/images/cross-red}}&lt;/$reveal&gt;\n\\end\n\n! Description\nThis plugin enables Google Analytics tracking inside ~TiddlyWiki.&lt;br&gt;\n&lt;p/&gt;\nUnlike the official [[googleanalytics|http://tiddlywiki.com/#%24%3A%2Fplugins%2Ftiddlywiki%2Fgoogleanalytics]] plugin, it allows to track tiddlers individually, and generate events instead of page views. It also allows to use the Universal Analytics platform (`analytics.js`) instead of the now legacy Google Analytics one (`ga.js`). The tracking script is used in asynchronous mode.&lt;br&gt;\nThe plugin comes with its own configuration, which is stored inside a dedicated [[configuration|$:/config/ga-tracker/options]] tiddler. See below to change the settings.&lt;br&gt;\n&lt;p/&gt;\nThe configuration has to be set before being effective.&lt;br&gt;\nTracking works if tracking has been enabled, an account ID has been set, ~TiddlyWiki access is non-local, and the host URL is not excluded. See below for the current state of tracking.&lt;br&gt;\nTiddlers can also be filtered by title name: a regular expression has to match to trigger the tracked action.\n&lt;p/&gt;\nTracking can be reported as either:\n\n* page views\n** pages are named `/#Tiddler name`\n* events\n** Category: `Tiddlers`\n** Action: `Open`, `Refresh`, `Edit`, `Search`, `Close` or `CloseAll`\n** Label\n*** for `CloseAll` action: excluded tiddler\n*** for `Search` action: searched text\n*** otherwise, tiddler name on which action is performed\n** Value: for the `CloseAll` action, the number of closed tiddlers\n\nNote that the Google Analytics script [[limits the number of events|https://developers.google.com/analytics/devguides/collection/gajs/limits-quotas]]:\n\n* 2 per second, with a burst limit of 20, for the Universal Analytics version\n* 1 per second, with a burst limit of 10, for the legacy Google Analytics version\n\n&lt;br&gt;\nTracking can be globally disabled, or enabled per action on tiddlers:\n\n* //Open//: when tiddler was not yet displayed\n** Note: default tiddlers do not trigger this action when accessing ~TiddlyWiki\n* //Refresh//: when tiddler was already displayed\n* //Edit//: when editing the tiddler\n* //Close//: when tiddler was displayed\n** this action is never tracked in //page views// tracking\n** the //~CloseAll// action is triggered by the ~TiddlyWiki //close all// and //close others// links if at least one tiddler was closed; individual tiddlers closed are not tracked as //Close// actions\n* //Search//: when searching in tiddlers\n** this action is never tracked in //page views// tracking\n** text length below a configured value is not taken into account\n** a simple mechanism is used to try to keep only intended searched terms: entered text is only taken into account if unchanged during a configured amount of time\n\n\n! Configuration\n\n&lt;!-- If both embedded googleanalytics and ga-tracker plugins are enabled, ask user to disable one --&gt;\n&lt;$reveal type=\&quot;nomatch\&quot; state=\&quot;$:/GoogleAnalyticsAccount!!text\&quot; text=\&quot;\&quot;&gt;\n&lt;$reveal type=\&quot;nomatch\&quot; state=\&quot;$:/config/ga-tracker/options!!gat_id\&quot; text=\&quot;\&quot;&gt;\n{{$:/core/images/warning}} Please delete or empty the [[embedded GoogleAnalytics plugin account value|$:/GoogleAnalyticsAccount]]: &lt;$view tiddler=\&quot;$:/GoogleAnalyticsAccount\&quot;/&gt;&lt;br&gt;\nLeaving this value and configuring the ''ga-tracker'' plugin will result in some notifications being sent twice.\n&lt;p/&gt;\n&lt;/$reveal&gt;\n&lt;/$reveal&gt;\n&lt;!-- Note: as documented, don't use 'edit' widget from whithin the tiddler being updated (focus is lost when tiddler is re-rendered) --&gt;\n&lt;table&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Account ID:&lt;/th&gt;&lt;td&gt;&lt;$edit tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_id\&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Tracking:&lt;/th&gt;&lt;td&gt;&lt;$checkbox tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_enabled\&quot; checked=\&quot;1\&quot; unchecked=\&quot;0\&quot; default=\&quot;1\&quot;&gt; Enabled&lt;/$checkbox&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Platform:&lt;/th&gt;&lt;td&gt;&lt;$select tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_version\&quot; default=\&quot;0\&quot;&gt;&lt;option value=\&quot;0\&quot;&gt;Legacy Google Analytics (ga.js)&lt;/option&gt;&lt;option value=\&quot;1\&quot;&gt;Universal Analytics (analytics.js)&lt;/option&gt;&lt;/$select&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;URL exclusion:&lt;/th&gt;&lt;td&gt;&lt;$edit tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_url_exclude\&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Title filter:&lt;/th&gt;&lt;td&gt;&lt;$edit tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_title_filter\&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Tracking method:&lt;/th&gt;&lt;td&gt;&lt;$select tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_type\&quot; default=\&quot;0\&quot;&gt;&lt;option value=\&quot;0\&quot;&gt;Events&lt;/option&gt;&lt;option value=\&quot;1\&quot;&gt;Pages&lt;/option&gt;&lt;/$select&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th rowspan=\&quot;5\&quot; align=\&quot;left\&quot;&gt;Tracked actions:&lt;/th&gt;&lt;td&gt;&lt;$checkbox tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_events_open\&quot; checked=\&quot;1\&quot; unchecked=\&quot;0\&quot; default=\&quot;1\&quot;&gt; Open&lt;/$checkbox&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;td&gt;&lt;$checkbox tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_events_refresh\&quot; checked=\&quot;1\&quot; unchecked=\&quot;0\&quot; default=\&quot;1\&quot;&gt; Refresh&lt;/$checkbox&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;td&gt;&lt;$checkbox tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_events_edit\&quot; checked=\&quot;1\&quot; unchecked=\&quot;0\&quot; default=\&quot;1\&quot;&gt; Edit&lt;/$checkbox&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;td&gt;&lt;$checkbox tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_events_close\&quot; checked=\&quot;1\&quot; unchecked=\&quot;0\&quot; default=\&quot;0\&quot;&gt; Close&lt;/$checkbox&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;td&gt;&lt;$checkbox tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_events_search\&quot; checked=\&quot;1\&quot; unchecked=\&quot;0\&quot; default=\&quot;0\&quot;&gt; Search&lt;/$checkbox&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Search minimum text size:&lt;/th&gt;&lt;td&gt;&lt;$edit tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_search_min_size\&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Search delay (ms):&lt;/th&gt;&lt;td&gt;&lt;$edit tiddler=\&quot;$:/config/ga-tracker/options\&quot; field=\&quot;gat_search_delay\&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;\nNote: don't forget to save (and reload) for changes to be applied.\n\n\n! State\n\n&lt;table&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Tracking enabled&lt;/th&gt;&lt;td&gt;&lt;&lt;gatCheckGreenOrCrossRed ref:\&quot;$:/temp/ga-tracker/state!!gat_enabled\&quot;&gt;&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Account defined&lt;/th&gt;&lt;td&gt;&lt;&lt;gatCheckGreenOrCrossRed ref:\&quot;$:/temp/ga-tracker/state!!gat_id_defined\&quot;&gt;&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Online&lt;/th&gt;&lt;td&gt;&lt;&lt;gatCheckGreenOrCrossRed ref:\&quot;$:/temp/ga-tracker/state!!gat_online\&quot;&gt;&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;URL allowed&lt;/th&gt;&lt;td&gt;&lt;&lt;gatCheckGreenOrCrossRed ref:\&quot;$:/temp/ga-tracker/state!!gat_url_allowed\&quot;&gt;&gt;&lt;/td&gt;&lt;/tr&gt;\n  &lt;tr&gt;&lt;th align=\&quot;left\&quot;&gt;Tracking status&lt;/th&gt;&lt;td&gt;&lt;&lt;gatCheckGreenOrCrossRed ref:\&quot;$:/temp/ga-tracker/state!!gat_on\&quot;&gt;&gt;&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;\n&quot;
+        }
+    }
+}</pre>
+</div>
+<div author="Julien Coloos" bag="default" core-version="&gt;=5.0.0" dependents="" description="Tiddler's Table of Contents" list="readme history" plugin-type="plugin" revision="0" source="http://julien.coloos.free.fr/TiddlyWiki5-dev/" title="$:/plugins/cyrius/tiddler-toc" type="application/json" version="2.0.3">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/plugins/cyrius/tiddler-toc/history&quot;: {
@@ -7856,7 +7900,7 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div author="JoaoBolila" core-version="&gt;=5.0.0" dependents="" description="Highlight.js: syntax highlighting" list="readme usage license" plugin-type="plugin" title="$:/plugins/tiddlywiki/highlight" type="application/json" version="5.1.13" revision="0" bag="default">
+<div author="JoaoBolila" bag="default" core-version="&gt;=5.0.0" dependents="" description="Highlight.js: syntax highlighting" list="readme usage license" plugin-type="plugin" revision="0" title="$:/plugins/tiddlywiki/highlight" type="application/json" version="5.1.13">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/plugins/tiddlywiki/highlight/highlight.js&quot;: {
@@ -7898,7 +7942,7 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div authors="JeremyRuston, JeffreyWilkinson" core-version="&gt;=5.0.15" created="20161224170036417" dependents="" description="TiddlyWiki Classic parser" list="readme" modified="20161224170036417" plugin-type="plugin" title="$:/plugins/tiddlywiki/tw2parser" type="application/json" version="5.1.13" revision="0" bag="default">
+<div authors="JeremyRuston, JeffreyWilkinson" bag="default" core-version="&gt;=5.0.15" created="20161224170036417" dependents="" description="TiddlyWiki Classic parser" list="readme" modified="20161224170036417" plugin-type="plugin" revision="0" title="$:/plugins/tiddlywiki/tw2parser" type="application/json" version="5.1.13">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/core/ui/ViewTemplate/classic&quot;: {
@@ -7954,30 +7998,30 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div created="20161224143343937" creator="Julien Coloos" modified="20161224143345225" modifier="Julien Coloos" title="$:/SiteSubtitle" type="text/vnd.tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224143343937" creator="Julien Coloos" modified="20161224143345225" modifier="Julien Coloos" revision="0" title="$:/SiteSubtitle" type="text/vnd.tiddlywiki">
 <pre></pre>
 </div>
-<div created="20161224143330059" creator="Julien Coloos" modified="20161224143336481" modifier="Julien Coloos" title="$:/SiteTitle" type="text/vnd.tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224143330059" creator="Julien Coloos" modified="20161224143336481" modifier="Julien Coloos" revision="0" title="$:/SiteTitle" type="text/vnd.tiddlywiki">
 <pre>Cyrius' ~TiddlyWiki5 dev</pre>
 </div>
-<div list="Devel" title="$:/StoryList" revision="1" bag="default">
+<div list="$:/Import Devel" title="$:/StoryList">
 <pre></pre>
 </div>
-<div plugin-type="info" title="$:/temp/info-plugin" type="application/json" revision="0" bag="default">
+<div plugin-type="info" title="$:/temp/info-plugin" type="application/json">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/info/browser&quot;: {
             &quot;title&quot;: &quot;$:/info/browser&quot;,
-            &quot;text&quot;: &quot;no&quot;
+            &quot;text&quot;: &quot;yes&quot;
         },
         &quot;$:/info/node&quot;: {
             &quot;title&quot;: &quot;$:/info/node&quot;,
-            &quot;text&quot;: &quot;yes&quot;
+            &quot;text&quot;: &quot;no&quot;
         }
     }
 }</pre>
 </div>
-<div author="JeremyRuston" core-version="&gt;=5.0.0" dependents="$:/themes/tiddlywiki/vanilla" description="Emphasises individual tiddlers" name="Snow White" plugin-type="theme" title="$:/themes/tiddlywiki/snowwhite" type="application/json" version="5.1.13" revision="0" bag="default">
+<div author="JeremyRuston" bag="default" core-version="&gt;=5.0.0" dependents="$:/themes/tiddlywiki/vanilla" description="Emphasises individual tiddlers" name="Snow White" plugin-type="theme" revision="0" title="$:/themes/tiddlywiki/snowwhite" type="application/json" version="5.1.13">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/themes/tiddlywiki/snowwhite/base&quot;: {
@@ -7988,7 +8032,7 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div author="JeremyRuston" core-version="&gt;=5.0.0" dependents="" description="Basic theme" name="Vanilla" plugin-type="theme" title="$:/themes/tiddlywiki/vanilla" type="application/json" version="5.1.13" revision="0" bag="default">
+<div author="JeremyRuston" bag="default" core-version="&gt;=5.0.0" dependents="" description="Basic theme" name="Vanilla" plugin-type="theme" revision="0" title="$:/themes/tiddlywiki/vanilla" type="application/json" version="5.1.13">
 <pre>{
     &quot;tiddlers&quot;: {
         &quot;$:/themes/tiddlywiki/vanilla/base&quot;: {
@@ -8086,10 +8130,10 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div created="20161224143830581" creator="Julien Coloos" modified="20161224143831844" modifier="Julien Coloos" title="$:/themes/tiddlywiki/vanilla/options/sidebarlayout" type="text/vnd.tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224143830581" creator="Julien Coloos" modified="20161224143831844" modifier="Julien Coloos" revision="0" title="$:/themes/tiddlywiki/vanilla/options/sidebarlayout" type="text/vnd.tiddlywiki">
 <pre>fluid-fixed</pre>
 </div>
-<div created="20161224143217018" creator="Julien Coloos" modified="20161225205631899" modifier="Julien Coloos" tags="" title="Devel" type="text/vnd.tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224143217018" creator="Julien Coloos" modified="20161225205631899" modifier="Julien Coloos" revision="0" tags="" title="Devel" type="text/vnd.tiddlywiki">
 <pre>! Plugins
 
 !! Tiddler's Table of Contents
@@ -8124,7 +8168,7 @@ tiddlywiki TiddlyWiki5-dev --build index
 ```
 </pre>
 </div>
-<div created="20161224170139104" modified="20161224170445877" tags="" title="Test TWC Tiddler" type="text/x-tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224170139104" modified="20161224170445877" revision="0" tags="" title="Test TWC Tiddler" type="text/x-tiddlywiki">
 <pre>Some text
 
 ! A first heading
@@ -8140,7 +8184,7 @@ Dummy text 3
 Dummy text 4
 </pre>
 </div>
-<div created="20161224174518047" modified="20161224174538549" tags="" title="Test TWC Tiddler 2" type="text/x-tiddlywiki" revision="0" bag="default">
+<div bag="default" created="20161224174518047" modified="20161224174538549" revision="0" tags="" title="Test TWC Tiddler 2" type="text/x-tiddlywiki">
 <pre>[[Some link]]
 Some text
 

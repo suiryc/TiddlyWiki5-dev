@@ -1,6 +1,6 @@
 created: 20161224143217018
 creator: Julien Coloos
-modified: 20161225205631899
+modified: 20161228200329330
 modifier: Julien Coloos
 tags: 
 title: Devel
@@ -13,6 +13,9 @@ type: text/vnd.tiddlywiki
 But there is no way to generate a ~ToC of the content of a tiddler (you are supposed to manually split your tiddler, add the tags and use the provided macro).
 <p/>
 So here is a [[Tiddler's Table of Contents plugin|$:/plugins/cyrius/tiddler-toc]].
+
+!! Google Analytics tracker
+Here is another asynchronous version of the [[Google Analytics tracker|$:/plugins/cyrius/ga-tracker]], tracking finer ~TiddlyWiki events.
 
 !! Development notes
 

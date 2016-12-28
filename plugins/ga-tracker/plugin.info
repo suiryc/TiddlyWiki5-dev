@@ -1,0 +1,10 @@
+{
+  "title": "$:/plugins/cyrius/ga-tracker",
+  "description": "Google Analytics tracker",
+  "author": "Julien Coloos",
+  "version": "2.0.0",
+  "core-version": ">=5.0.0",
+  "source": "http://julien.coloos.free.fr/TiddlyWiki5-dev/",
+  "plugin-type": "plugin",
+  "list": "readme history"
+}

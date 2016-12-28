@@ -1,0 +1,16 @@
+title: $:/plugins/cyrius/ga-tracker/history
+
+!! v2.0.0 (2016-12-28)
+Initial release on ~TiddlyWiki5.<br>
+Based on original code for ~TiddlyWikiClassic.
+
+Changes:
+
+* use newer Universal Analytics platform (analytics.js) instead of now legacy Google Analytics ones (ga.js)
+** added option to keep on using the legacy platform script
+
+
+Enhancements:
+
+* added option to filter tiddlers to track based on title name
+* added option to honor or not [[Do-Not-Track|http://donottrack.us/]]

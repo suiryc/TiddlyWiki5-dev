@@ -1,0 +1,29 @@
+title: $:/plugins/cyrius/ga-tracker/macros
+tags: $:/tags/Macro
+
+\define gatCheckCorrect(ref, fill) <$reveal type="match" state="$ref$" text="1"><<gatSVGCorrect $fill$>></$reveal>
+
+\define gatCheckIncorrect(ref, fill) <$reveal type="match" state="$ref$" text="0"><<gatSVGIncorrect $fill$>></$reveal><$reveal type="match" state="$ref$" text="-1"><<gatSVGIncorrect "#ffc848">></$reveal>
+
+\define gatCheckState(ref) <<gatCheckCorrect $ref$>><<gatCheckIncorrect $ref$>>
+
+
+\define gatSVGCorrect(fill:"#48a848" size:"16pt")
+<!-- https://www.iconfinder.com/icons/1398912/check_circle_correct_mark_success_tick_yes_icon -->
+<!-- Actual icon fits at x=50,y=140,width=512,height=512; keep a 32 pixels margin around it -->
+<svg viewBox="18 108 576 576" width="$size$" height="$size$" style="vertical-align:middle">
+  <g>
+    <path style="fill:$fill$" d="M562,396c0-141.4-114.6-256-256-256S50,254.6,50,396s114.6,256,256,256S562,537.4,562,396L562,396z    M501.7,296.3l-241,241l0,0l-17.2,17.2L110.3,421.3l58.8-58.8l74.5,74.5l199.4-199.4L501.7,296.3L501.7,296.3z"/>
+  </g>
+</svg>
+\end
+
+\define gatSVGIncorrect(fill:"#e84040" size:"16pt")
+<!-- https://www.iconfinder.com/icons/1398917/circle_close_cross_delete_incorrect_invalid_x_icon -->
+<!-- Actual icon fits at x=50,y=140,width=512,height=512; keep a 32 pixels margin around it -->
+<svg viewBox="18 108 576 576" width="$size$" height="$size$" style="vertical-align:middle">
+  <g>
+    <path style="fill:$fill$" d="M562,396c0-141.4-114.6-256-256-256S50,254.6,50,396s114.6,256,256,256S562,537.4,562,396L562,396z M356.8,396   L475,514.2L424.2,565L306,446.8L187.8,565L137,514.2L255.2,396L137,277.8l50.8-50.8L306,345.2L424.2,227l50.8,50.8L356.8,396   L356.8,396z"/>
+  </g>
+</svg>
+\end

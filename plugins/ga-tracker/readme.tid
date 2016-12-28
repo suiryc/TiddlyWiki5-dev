@@ -1,0 +1,98 @@
+title: $:/plugins/cyrius/ga-tracker/readme
+
+! Description
+This plugin enables Google Analytics tracking inside ~TiddlyWiki.<br>
+<p/>
+Unlike the official [[googleanalytics|http://tiddlywiki.com/#%24%3A%2Fplugins%2Ftiddlywiki%2Fgoogleanalytics]] plugin, it allows to track tiddlers individually, and generate events instead of page views. It also allows to use the Universal Analytics platform (`analytics.js`) instead of the now legacy Google Analytics one (`ga.js`). The tracking script is used in asynchronous mode.<br>
+The plugin comes with its own configuration, which is stored inside a dedicated [[configuration|$:/config/ga-tracker/settings]] tiddler. See below to change the settings.<br>
+<p/>
+The configuration has to be set before being effective.<br>
+Tracking works if tracking has been enabled, an account ID has been set, ~TiddlyWiki access is non-local, the host URL is not excluded, and user does not [[opt-out tracking|http://donottrack.us/]] (or you do not honor it). See below for the current state of tracking.<br>
+Tiddlers can also be filtered by title name: a regular expression has to match to trigger the tracked action.
+<p/>
+Tracking can be reported as either:
+
+* page views
+** pages are named `/#Tiddler name`
+* events
+** Category: `Tiddlers` or `DoNotTrack`
+** Action: `Open`, `Refresh`, `Edit`, `Search`, `Close` or `CloseAll`
+** Label
+*** for `CloseAll` action: excluded tiddler
+*** for `Search` action: searched text
+*** otherwise, tiddler name on which action is performed
+** Value
+*** for the `Open` action: `2` if tiddler is opened in story (user action), `1` as target of permaview/permalink, and `0` as part of permaview
+*** for the `CloseAll` action, the number of closed tiddlers
+
+Notes:
+
+* the Google Analytics script [[limits the number of events|https://developers.google.com/analytics/devguides/collection/gajs/limits-quotas]]
+** 2 per second, with a burst limit of 20, for the Universal Analytics version
+** 1 per second, with a burst limit of 10, for the legacy Google Analytics version
+* the special `DoNotTrack` category event is triggered once when loading the page and the client enabled [[Do-Not-Track|http://donottrack.us/]] (and this is visible in ~JavaScript)
+* honoring Do-Not-Track is optional
+
+<br>
+Tracking can be globally disabled, or enabled per action on tiddlers:
+
+* `Open`: when tiddler was not yet displayed
+** default tiddlers do not trigger this action when accessing ~TiddlyWiki; however permalink/permaview do trigger it
+* `Refresh`: when tiddler was already displayed
+* `Edit`: when editing the tiddler
+* `Close`: when tiddler was displayed
+** this action is never tracked in //page views// tracking
+** the `CloseAll` action is triggered by the ~TiddlyWiki //close all// and //close others// links if at least one tiddler was closed; individual tiddlers closed are not tracked as `Close` actions
+* `Search`: when searching in tiddlers
+** this action is never tracked in //page views// tracking
+** text length below a configured value is not taken into account
+** a simple mechanism is used to try to keep only intended searched terms: entered text is only taken into account if unchanged during a configured amount of time
+
+
+! Configuration
+
+<!-- If both embedded googleanalytics and ga-tracker plugins are enabled, ask user to disable one -->
+<$reveal type="nomatch" state="$:/GoogleAnalyticsAccount!!text" text="">
+<$reveal type="nomatch" state="$:/config/ga-tracker/settings!!gat_id" text="">
+{{$:/core/images/warning}} Please delete or empty the [[embedded GoogleAnalytics plugin account value|$:/GoogleAnalyticsAccount]]: <$view tiddler="$:/GoogleAnalyticsAccount"/><br>
+Leaving this value and configuring the ''ga-tracker'' plugin will result in some notifications being sent twice.
+<p/>
+</$reveal>
+</$reveal>
+<!-- Unset the 'width:100%' style set on table and table inputs when tiddler is displayed inside the plugin details tab. -->
+<style>
+  table.unset-width, table.unset-width input {width: unset;}
+</style>
+<!-- Note: as documented, don't use 'edit' widget from whithin the tiddler being updated (focus is lost when tiddler is re-rendered) -->
+<table class="unset-width">
+  <tr><th align="left">Account ID:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_id" size="20"/></td></tr>
+  <tr><th align="left">Tracking:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_enabled" checked="1" unchecked="0" default="1"> Enabled</$checkbox></td></tr>
+  <tr><th align="left">Platform:</th><td><$select tiddler="$:/config/ga-tracker/settings" field="gat_version" default="0"><option value="0">Legacy Google Analytics (ga.js)</option><option value="1">Universal Analytics (analytics.js)</option></$select></td></tr>
+  <tr><th align="left">URL exclusion:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_url_exclude" size="60"/></td></tr>
+  <tr><th align="left">Title filter:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_title_filter" size="60"/></td></tr>
+  <tr><th align="left">Honor [[Do-Not-Track|http://donottrack.us/]]:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_honor_dnt" checked="1" unchecked="0" default="1"> Enabled</$checkbox></td></tr>
+  <tr><th align="left">Tracking method:</th><td><$select tiddler="$:/config/ga-tracker/settings" field="gat_type" default="0"><option value="0">Events</option><option value="1">Pages</option></$select></td></tr>
+  <tr><th rowspan="6" align="left">Tracked actions:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_dnt" checked="1" unchecked="0" default="1"> Do-Not-Track</$checkbox></td></tr>
+  <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_open" checked="1" unchecked="0" default="1"> Open</$checkbox></td></tr>
+  <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_refresh" checked="1" unchecked="0" default="1"> Refresh</$checkbox></td></tr>
+  <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_edit" checked="1" unchecked="0" default="1"> Edit</$checkbox></td></tr>
+  <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_close" checked="1" unchecked="0" default="0"> Close</$checkbox></td></tr>
+  <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_search" checked="1" unchecked="0" default="0"> Search</$checkbox></td></tr>
+  <tr><th align="left">Search minimum text size:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_search_min_size" size="4"/></td></tr>
+  <tr><th align="left">Search delay (ms):</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_search_delay" size="6"/></td></tr>
+</table>
+Note: don't forget to save (and reload) for changes to be applied.
+
+
+! State
+
+<table class="unset-width">
+  <tr><th align="left">Tracking enabled</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_enabled">></td></tr>
+  <tr><th align="left">Account defined</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_id_defined">></td></tr>
+  <tr><th align="left">Online</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_online">></td></tr>
+  <tr><th align="left">URL allowed</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_url_allowed">></td></tr>
+  <tr><th align="left">[[Can track|http://donottrack.us/]]</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_can_track">></td></tr>
+  <tr><th align="left">Script loaded</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_script_loaded">></td></tr>
+  <$reveal type="nomatch" state="$:/temp/ga-tracker/state!!gat_plugged" text="1" tag="tr"><th align="left">Not mocked</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_plugged">></td></$reveal>
+  <tr><th align="left">Tracking status</th><td><<gatCheckState "$:/temp/ga-tracker/state!!gat_working">></td></tr>
+</table>

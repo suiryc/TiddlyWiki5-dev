@@ -1,0 +1,18 @@
+title: $:/config/ga-tracker/settings
+gat_enabled: 1
+gat_version: 1
+gat_id: UA-23188652-3
+gat_url_exclude: https?://[^/]*(github\.com|dropbox)
+gat_honor_dnt: 1
+gat_type: 0
+gat_events_dnt: 1
+gat_events_open: 1
+gat_events_refresh: 1
+gat_events_edit: 1
+gat_events_close: 1
+gat_events_search: 1
+gat_search_min_size: 2
+gat_search_delay: 1000
+gat_title_filter:
+gat_testing_enabled: 0
+gat_testing_mock: 0

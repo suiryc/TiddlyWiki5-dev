@@ -67,19 +67,19 @@ Leaving this value and configuring the ''ga-tracker'' plugin will result in some
 <table class="unset-width">
   <tr><th align="left">Account ID:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_id" size="20"/></td></tr>
   <tr><th align="left">Tracking:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_enabled" checked="1" unchecked="0" default="1"> Enabled</$checkbox></td></tr>
-  <tr><th align="left">Platform:</th><td><$select tiddler="$:/config/ga-tracker/settings" field="gat_version" default="0"><option value="0">Legacy Google Analytics (ga.js)</option><option value="1">Universal Analytics (analytics.js)</option></$select></td></tr>
+  <tr><th align="left">Platform:</th><td><$select tiddler="$:/config/ga-tracker/settings" field="gat_version" default="1"><option value="0">Legacy Google Analytics (ga.js)</option><option value="1">Universal Analytics (analytics.js)</option></$select></td></tr>
   <tr><th align="left">URL exclusion:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_url_exclude" size="60"/></td></tr>
   <tr><th align="left">Title filter:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_title_filter" size="60"/></td></tr>
   <tr><th align="left">Honor [[Do-Not-Track|http://donottrack.us/]]:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_honor_dnt" checked="1" unchecked="0" default="1"> Enabled</$checkbox></td></tr>
   <tr><th align="left">Tracking method:</th><td><$select tiddler="$:/config/ga-tracker/settings" field="gat_type" default="0"><option value="0">Events</option><option value="1">Pages</option></$select></td></tr>
-  <tr><th rowspan="6" align="left">Tracked actions:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_dnt" checked="1" unchecked="0" default="1"> Do-Not-Track</$checkbox></td></tr>
+  <tr><th rowspan="6" align="left">Tracked actions:</th><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_dnt" checked="1" unchecked="0" default="1"> ~DoNotTrack</$checkbox></td></tr>
   <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_open" checked="1" unchecked="0" default="1"> Open</$checkbox></td></tr>
   <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_refresh" checked="1" unchecked="0" default="1"> Refresh</$checkbox></td></tr>
   <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_edit" checked="1" unchecked="0" default="1"> Edit</$checkbox></td></tr>
   <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_close" checked="1" unchecked="0" default="0"> Close</$checkbox></td></tr>
   <tr><td><$checkbox tiddler="$:/config/ga-tracker/settings" field="gat_events_search" checked="1" unchecked="0" default="0"> Search</$checkbox></td></tr>
-  <tr><th align="left">Search minimum text size:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_search_min_size" size="4"/></td></tr>
-  <tr><th align="left">Search delay (ms):</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_search_delay" size="6"/></td></tr>
+  <tr><th align="left">Search minimum text size:</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_search_min_size" default="2" size="4"/></td></tr>
+  <tr><th align="left">Search delay (ms):</th><td><$edit-text tiddler="$:/config/ga-tracker/settings" field="gat_search_delay" default="1000" size="6"/></td></tr>
 </table>
 Note: don't forget to save (and reload) for changes to be applied.
 

@@ -39,26 +39,22 @@ var TEMP_GA_TRACKER_STATE_TIDDLER = "$:/temp/ga-tracker/state";
 var CONFIG_GA_TRACKER_SETTINGS_TIDDLER = "$:/config/ga-tracker/settings";
 var CONFIG_GA_TRACKER_SETTINGS_DEFAULT = {
   enabled: 1,
-  version: VERSION_GA,
-  id: undefined,
-  url_exclude: undefined,
+  version: VERSION_UA,
+  id: "",
+  url_exclude: "",
   type: TRACKING_TYPE_EVENTS,
-  events: {
-    dnt: 1,
-    open: 1,
-    refresh: 1,
-    edit: 1,
-    close: 0,
-    search: 0
-  },
+  events_dnt: 1,
+  events_open: 1,
+  events_refresh: 1,
+  events_edit: 1,
+  events_close: 0,
+  events_search: 0,
   search_min_size: 2,
   search_delay: 1000,
-  title_filter: undefined,
-  honor_dnt: true,
-  testing: {
-    enabled: false,
-    mock: false
-  }
+  title_filter: "",
+  honor_dnt: 1,
+  testing_enabled: 0,
+  testing_mock: 0
 };
 
 var trackSettings = CONFIG_GA_TRACKER_SETTINGS_DEFAULT;
@@ -68,8 +64,6 @@ var searchDelayTimer = undefined;
 
 // Map of overriden TiddlyWiki core functions.
 var overriden = {};
-
-// TODO: prevent table from taking whole width in plugin 'readme' tab ?
 
 var NavigatorWidget = require("$:/core/modules/widgets/navigator.js").navigator;
 
@@ -86,10 +80,29 @@ function intBoolean(v) {
 }
 
 // Sets fiels to a given tiddler.
-function setFields(title, fields) {
+function setFields(title, fields, fieldPrefix, ifChanged) {
+  if (fieldPrefix) {
+    var newFields = {};
+    $tw.utils.each(fields, function(value, key) {
+      newFields[fieldPrefix + key] = value;
+    });
+    fields = newFields;
+  }
+
   var tiddler = $tw.wiki.getTiddler(title);
-  var fallbackFields = {title: title};
-  $tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fallbackFields, tiddler, fields, $tw.wiki.getModificationFields()));
+  var doSave = !ifChanged || (!tiddler && fields);
+  if (!doSave) {
+    for (var field in fields) {
+      if (tiddler.fields[field] != fields[field]) {
+        doSave = true;
+        break;
+      }
+    }
+  }
+  if (doSave) {
+    var fallbackFields = {title: title};
+    $tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fallbackFields, tiddler, fields, $tw.wiki.getModificationFields()));
+  }
 }
 
 // Get a field value from a tiddler fields.
@@ -125,22 +138,21 @@ function loadSettings() {
     url_exclude: getStringField(fields, "gat_url_exclude", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.url_exclude),
     honor_dnt: getIntField(fields, "gat_honor_dnt", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.honor_dnt),
     type: getIntField(fields, "gat_type", TRACKING_TYPE_EVENTS, CONFIG_GA_TRACKER_SETTINGS_DEFAULT.type),
-    events: {
-      dnt: getIntField(fields, "gat_events_dnt", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.dnt),
-      open: getIntField(fields, "gat_events_open", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.open),
-      refresh: getIntField(fields, "gat_events_refresh", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.refresh),
-      edit: getIntField(fields, "gat_events_edit", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.edit),
-      close: getIntField(fields, "gat_events_close", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.close),
-      search: getIntField(fields, "gat_events_search", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.search)
-    },
-    search_min_size: getIntField(fields, "gat_search_min_size", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.search_min_size),
-    search_delay: getIntField(fields, "gat_search_delay", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events.search_delay),
+    events_dnt: getIntField(fields, "gat_events_dnt", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_dnt),
+    events_open: getIntField(fields, "gat_events_open", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_open),
+    events_refresh: getIntField(fields, "gat_events_refresh", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_refresh),
+    events_edit: getIntField(fields, "gat_events_edit", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_edit),
+    events_close: getIntField(fields, "gat_events_close", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_close),
+    events_search: getIntField(fields, "gat_events_search", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_search),
+    search_min_size: getIntField(fields, "gat_search_min_size", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_search_min_size),
+    search_delay: getIntField(fields, "gat_search_delay", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.events_search_delay),
     title_filter: getStringField(fields, "gat_title_filter", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.title_filter),
-    testing: {
-      enabled: getIntField(fields, "gat_testing_enabled", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.testing.enabled),
-      mock: getIntField(fields, "gat_testing_mock", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.testing.mock)
-    }
+    testing_enabled: getIntField(fields, "gat_testing_enabled", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.testing_enabled),
+    testing_mock: getIntField(fields, "gat_testing_mock", CONFIG_GA_TRACKER_SETTINGS_DEFAULT.testing_mock)
   };
+  // Save default values if necessary
+  // EditTextWidget does not cope for missing fields if tiddler exists: https://github.com/Jermolene/TiddlyWiki5/issues/2680
+  setFields(CONFIG_GA_TRACKER_SETTINGS_TIDDLER, trackSettings, "gat_", true);
   if (trackSettings.title_filter) trackSettings.title_filter = new RegExp(trackSettings.title_filter);
 
   // Only track in non-local mode.
@@ -155,16 +167,16 @@ function loadSettings() {
     gat_url_allowed: intBoolean(!url_excluded),
     gat_can_track: !do_not_track ? 1 : (trackSettings.honor_dnt ? 0 : -1),
     gat_script_loaded: 0,
-    gat_plugged: intBoolean(!trackSettings.testing.mock) || -1
+    gat_plugged: intBoolean(!trackSettings.testing_mock) || -1
   }
   state.gat_on = state.gat_enabled && state.gat_id_defined
     && state.gat_online && state.gat_url_allowed
-    && (state.gat_can_track || trackSettings.events.dnt);
+    && (state.gat_can_track || trackSettings.events_dnt);
   state.gat_track_actions = state.gat_on && state.gat_can_track;
   trackSettings.state = state;
   updatedState();
 
-  if (trackSettings.testing.enabled) console.log("GA tracker settings", trackSettings);
+  if (trackSettings.testing_enabled) console.log("GA tracker settings", trackSettings);
 
   return trackSettings;
 }
@@ -197,7 +209,7 @@ function installTracker() {
 
   // Initialize tracking.
   track("create", trackSettings.id, "auto");
-  if (trackSettings.events.dnt && (trackSettings.state.gat_can_track <= 0)) track("send", "event", "DoNotTrack");
+  if (trackSettings.events_dnt && (trackSettings.state.gat_can_track <= 0)) track("send", "event", "DoNotTrack");
   if (trackSettings.state.gat_track_actions) {
     track("send", "pageview");
     trackStartup();
@@ -218,15 +230,15 @@ function installTracker() {
 
   // Override the necessary TiddlyWiki core functions.
   if (trackSettings.state.gat_track_actions) {
-    if (trackSettings.events.open || trackSettings.events.refresh) {
+    if (trackSettings.events_open || trackSettings.events_refresh) {
       overriden["navigator.addToStory"] = NavigatorWidget.prototype.addToStory;
       NavigatorWidget.prototype.addToStory = trackAndAddToStory;
     }
-    if (trackSettings.events.edit) {
+    if (trackSettings.events_edit) {
       overriden["navigator.handleEditTiddlerEvent"] = NavigatorWidget.prototype.handleEditTiddlerEvent;
       NavigatorWidget.prototype.handleEditTiddlerEvent = trackAndEditTiddler;
     }
-    if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events.close) {
+    if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events_close) {
       overriden["navigator.handleCloseTiddlerEvent"] = NavigatorWidget.prototype.handleCloseTiddlerEvent;
       NavigatorWidget.prototype.handleCloseTiddlerEvent = trackAndCloseTiddler;
       overriden["navigator.handleCloseAllTiddlersEvent"] = NavigatorWidget.prototype.handleCloseAllTiddlersEvent;
@@ -234,7 +246,7 @@ function installTracker() {
       overriden["navigator.handleCloseOtherTiddlersEvent"] = NavigatorWidget.prototype.handleCloseOtherTiddlersEvent;
       NavigatorWidget.prototype.handleCloseOtherTiddlersEvent = trackAndCloseOtherTiddlers;
     }
-    if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events.search) {
+    if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events_search) {
       overriden["wiki.search"] = $tw.wiki.search;
       $tw.wiki.search = trackAndSearch;
     }
@@ -248,9 +260,9 @@ function track(action, param) {
   // (["_trackPageview", opt_path]) => ("send", "pageview", opt_path)
   // (["_trackEvent", category, action, opt_label, opt_value)] => ("send", "event", category, action, opt_label, opt_value)
   if (trackSettings.version == VERSION_UA) {
-    if (trackSettings.testing.enabled) console.log("Track", Array.prototype.slice.call(arguments));
+    if (trackSettings.testing_enabled) console.log("Track", Array.prototype.slice.call(arguments));
     // We have to push the arguments
-    if (!trackSettings.testing.mock) ga.apply(ga, arguments);
+    if (!trackSettings.testing_mock) ga.apply(ga, arguments);
   } else {
     var params;
     switch (action) {
@@ -269,9 +281,9 @@ function track(action, param) {
         break;
     }
     if (!params) params = arguments;
-    if (trackSettings.testing.enabled) console.log("Track", params);
+    if (trackSettings.testing_enabled) console.log("Track", params);
     // We have to push an array containing the arguments
-    if (!trackSettings.testing.mock) _gaq.push(params);
+    if (!trackSettings.testing_mock) _gaq.push(params);
   }
 }
 
@@ -287,7 +299,7 @@ function trackStartup() {
     if (testTitle(title) && $tw.wiki.getTiddler(title)) trackOpenTiddler(title, "Open", value);
   }
 
-  if (trackSettings.events.open && ($tw.locationHash.length > 1)) {
+  if (trackSettings.events_open && ($tw.locationHash.length > 1)) {
     var hash = $tw.locationHash.substr(1);
     var split = hash.indexOf(":");
     if(split === -1) {
@@ -316,12 +328,12 @@ function trackOpenTiddler(title, trackEvent, trackValue) {
 
 // Overrides tiddler opening/refreshing action.
 function trackAndAddToStory(title, fromTitle) {
-  if ((trackSettings.events.open || trackSettings.events.refresh) && testTitle(title)) {
+  if ((trackSettings.events_open || trackSettings.events_refresh) && testTitle(title)) {
     var storyList = this.getStoryList();
     var slot = storyList ? storyList.indexOf(title) : -1;
     var trackEvent = (slot < 0)
-      ? (trackSettings.events.open ? "Open" : undefined)
-      : (trackSettings.events.refresh ? "Refresh" : undefined)
+      ? (trackSettings.events_open ? "Open" : undefined)
+      : (trackSettings.events_refresh ? "Refresh" : undefined)
       ;
     var trackValue = (slot < 0) ? EVENT_OPEN_STORY : undefined;
     if (trackEvent) trackOpenTiddler(title, trackEvent, trackValue);
@@ -331,7 +343,7 @@ function trackAndAddToStory(title, fromTitle) {
 
 // Overrides tiddler editing action.
 function trackAndEditTiddler(event) {
-  if (trackSettings.events.edit) {
+  if (trackSettings.events_edit) {
     var title = event.param || event.tiddlerTitle;
     if (testTitle(title)) {
       if (trackSettings.type == TRACKING_TYPE_PAGES) track("send", "pageview", "/#" + title);
@@ -343,7 +355,7 @@ function trackAndEditTiddler(event) {
 
 // Overrides tiddler closing action.
 function trackAndCloseTiddler(event) {
-  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events.close) {
+  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events_close) {
     var title = event.param || event.tiddlerTitle;
     if (testTitle(title)) track("send", "event", "Tiddlers", "Close", title);
   }
@@ -352,7 +364,7 @@ function trackAndCloseTiddler(event) {
 
 // Overrides tiddlers 'close all' action.
 function trackAndCloseAllTiddlers(event) {
-  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events.close) {
+  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events_close) {
     var storyList = this.getStoryList();
     var closed = storyList ? storyList.length : 0;
     if (closed > 0) track("send", "event", "Tiddlers", "CloseAll", undefined, closed);
@@ -362,7 +374,7 @@ function trackAndCloseAllTiddlers(event) {
 
 // Overrides tiddlers 'close other' action.
 function trackAndCloseOtherTiddlers(event) {
-  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events.close) {
+  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events_close) {
     var title = event.param || event.tiddlerTitle;
     var storyList = this.getStoryList();
     var closed = storyList ? storyList.length - 1: 0;
@@ -373,7 +385,7 @@ function trackAndCloseOtherTiddlers(event) {
 
 // Overrides searching action.
 function trackAndSearch(text) {
-  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events.search && (text !== searched)) {
+  if ((trackSettings.type == TRACKING_TYPE_EVENTS) && trackSettings.events_search && (text !== searched)) {
     searched = text;
     // Searching is triggered each time the value is changed.
     // So wait for the value to remain the same during a given time before actually taking it into account.

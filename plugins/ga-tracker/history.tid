@@ -1,5 +1,13 @@
 title: $:/plugins/cyrius/ga-tracker/history
 
+!! v2.0.1 (2016-12-29)
+
+Changes:
+
+* switch to Universal Analytics as default platform
+* save default values if necessary upon first use; should prevent a few glitches with the widgets used to change the settings
+
+
 !! v2.0.0 (2016-12-28)
 Initial release on ~TiddlyWiki5.<br>
 Based on original code for ~TiddlyWikiClassic.

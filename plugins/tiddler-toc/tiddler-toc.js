@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/cyrius/tiddler-toc.js
+title: $:/plugins/cyrius/tiddler-toc/tiddler-toc.js
 type: application/javascript
 module-type: widget
 
@@ -11,13 +11,14 @@ Redefines some internal rendering code to build a Table of Contents inside tiddl
 
 var hTag = /^h([1-6])$/i;
 
-var CONFIG_MIN_ENTRIES_TIDDLER = "$:/config/tiddler-toc/min-entries";
-var DEFAULT_MIN_ENTRIES = "2";
-var minEntries = parseInt($tw.wiki.getTiddlerText(CONFIG_MIN_ENTRIES_TIDDLER, DEFAULT_MIN_ENTRIES));
+var CONFIG_TIDDLER_TOC_SETTINGS_TIDDLER = "$:/config/tiddler-toc/settings";
+var CONFIG_TIDDLER_TOC_SETTINGS_DEFAULT = {
+  min_entries: 2,
+  title_filter: "^(?!\$:)"
+}
 
-var CONFIG_TITLE_FILTER_TIDDLER = "$:/config/tiddler-toc/title-filter";
-var DEFAULT_TITLE_FILTER = "^(?!\$:)";
-var titleFilter = new RegExp($tw.wiki.getTiddlerText(CONFIG_TITLE_FILTER_TIDDLER, DEFAULT_TITLE_FILTER));
+var tocSettings = CONFIG_TIDDLER_TOC_SETTINGS_DEFAULT;
+loadSettings();
 
 
 // 'transclude' is used for standard tiddlers and transclusion.
@@ -27,19 +28,81 @@ var TiddlerWidget = require("$:/core/modules/widgets/tiddler.js").tiddler;
 var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
 
 // Backup current rendering functions before redefining them
-var revealRender = RevealWidget.prototype.render;
-var transcludeRender = TranscludeWidget.prototype.render;
+var overriden = {
+  "reveal.render": RevealWidget.prototype.render,
+  "transclude.render": TranscludeWidget.prototype.render
+};
 
 RevealWidget.prototype.render = function(parent, nextSibling) {
-  revealRender.call(this, parent, nextSibling);
+  overriden["reveal.render"].call(this, parent, nextSibling);
   buildToC(getWidgetNode(this));
 }
 
 TranscludeWidget.prototype.render = function(parent, nextSibling) {
-  transcludeRender.call(this, parent, nextSibling);
+  overriden["transclude.render"].call(this, parent, nextSibling);
   buildToC(getWidgetNode(this));
 }
 
+
+// Sets fiels to a given tiddler.
+function setFields(title, fields, fieldPrefix, ifChanged) {
+  if (fieldPrefix) {
+    var newFields = {};
+    $tw.utils.each(fields, function(value, key) {
+      newFields[fieldPrefix + key] = value;
+    });
+    fields = newFields;
+  }
+
+  var tiddler = $tw.wiki.getTiddler(title);
+  var doSave = !ifChanged || (!tiddler && fields);
+  if (!doSave) {
+    for (var field in fields) {
+      if (tiddler.fields[field] != fields[field]) {
+        doSave = true;
+        break;
+      }
+    }
+  }
+  if (doSave) {
+    var fallbackFields = {title: title};
+    $tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fallbackFields, tiddler, fields, $tw.wiki.getModificationFields()));
+  }
+}
+
+// Get a field value from a tiddler fields.
+function getField(fields, field, def) {
+  return (fields[field] !== undefined) ? fields[field] : def;
+}
+
+// Gets a field as string value. Empty value is returned as undefined.
+function getStringField(fields, field, def) {
+  var r = getField(fields, field, undefined);
+  if (r && !r.length) r = undefined;
+  return r ? r : def;
+}
+
+// Gets a field as int value.
+function getIntField(fields, field, def) {
+  return parseInt(getField(fields, field, def));
+}
+
+// Loads the plugin settings.
+function loadSettings() {
+  var tiddler = $tw.wiki.getTiddler(CONFIG_TIDDLER_TOC_SETTINGS_TIDDLER);
+  var fields = tiddler ? tiddler.fields : {};
+
+  tocSettings = {
+    min_entries: getIntField(fields, "ttoc_min_entries", CONFIG_TIDDLER_TOC_SETTINGS_DEFAULT.min_entries),
+    title_filter: getStringField(fields, "ttoc_title_filter", CONFIG_TIDDLER_TOC_SETTINGS_DEFAULT.title_filter)
+  };
+  // Save default values if necessary
+  // EditTextWidget does not cope for missing fields if tiddler exists: https://github.com/Jermolene/TiddlyWiki5/issues/2680
+  setFields(CONFIG_TIDDLER_TOC_SETTINGS_TIDDLER, tocSettings, "ttoc_", true);
+  if (tocSettings.title_filter) tocSettings.title_filter = new RegExp(tocSettings.title_filter);
+
+  return tocSettings;
+}
 
 function isTiddlerBody(node) {
   return node && $tw.utils.hasClass(node, "tc-tiddler-body");
@@ -87,7 +150,7 @@ function getWidgetNode(widget) {
   if (isTocOn) return node;
 
   // Or we finally exclude tiddlers on title name.
-  if (!titleFilter.test(tiddlerTitle) || (isTab && !titleFilter.test(widget.text))) return undefined;
+  if (!tocSettings.title_filter.test(tiddlerTitle) || (isTab && !tocSettings.title_filter.test(widget.text))) return undefined;
 
   return node;
 }
@@ -191,7 +254,7 @@ function buildToC(node) {
   var isTocOn = node["toc-on"];
   // Determine where to generate the ToC (first element by default), and start to build it.
   var toc = (isTocOn && findToC(node)) || document.createElement("div");
-  var tocMinEntries = toc.getAttribute("min-entries") || minEntries;
+  var tocMinEntries = toc.getAttribute("min-entries") || tocSettings.min_entries;
   $tw.utils.addClass(toc, "tw_ttoc");
   var tocTitle = document.createElement("div");
   $tw.utils.addClass(tocTitle, "tw_ttoc_title");

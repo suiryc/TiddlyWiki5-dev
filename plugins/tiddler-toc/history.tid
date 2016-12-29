@@ -2,34 +2,50 @@ title: $:/plugins/cyrius/tiddler-toc/history
 
 <<tiddler-toc>>
 
+!! v2.1.0 (2016-12-29)
+
+Fixes:
+
+* renamed main plugin tiddler to be part of the plugin hierarchy
+
+Changes:
+
+* merged `min-entries` and `title-filter` config tiddlers into a dedicated settings tiddler which is not packaged with the plugin (making it easier to change settings)
+* save default values if necessary upon first use; should prevent a few glitches with the widgets used to change the settings
+
+Enhancements:
+
+* the [[readme|$:/plugins/cyrius/tiddler-toc/readme]] tiddler provides an easy way to change the plugin settings
+
+
 !! v2.0.3 (2016-12-25)
 
 Fixes:
 
-* Documentation text formatting due to macros only existing in tw5.com edition ...
+* documentation text formatting due to macros only existing in tw5.com edition ...
 
 
 !! v2.0.2 (2016-12-24)
 
 Enhancements:
 
-* To cover more situations, actually insert the `br` separation if next node is not a `br`, `p` or heading
+* to cover more situations, actually insert the `br` separation if next node is not a `br`, `p` or heading
 
 
 !! v2.0.1 (2016-12-24)
 
 Fixes:
 
-* Work with parsed tiddlers (at least by TWC parser)
+* work with parsed tiddlers (at least by TWC parser)
 
 Enhancements:
 
-* Insert a `br` separation after generated ~ToC if necessary (e.g. if next sibling is a text node instead of an element)
+* insert a `br` separation after generated ~ToC if necessary (e.g. if next sibling is a text node instead of an element)
 
 
 !! v2.0.0 (2016-12-24)
-Initial release on TiddlyWiki5.<br>
-Based on original code for TiddlyWikiClassic.
+Initial release on ~TiddlyWiki5.<br>
+Based on original code for ~TiddlyWikiClassic.
 
 Changes:
 

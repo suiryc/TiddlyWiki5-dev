@@ -6,6 +6,7 @@ Tiddler's Table of Contents.
 
 ! Description
 This plugin generates a ~ToC inside a tiddler.<br>
+It comes with its own configuration, which is stored inside a dedicated [[configuration|$:/config/tiddler-toc/settings]] tiddler. See below to change the settings.<br>
 The generated ~ToC entries list the headings found in the tiddler, each entry being preceded by a number representing its level and index (e.g.: //1.2.1//). Those numbers link to the corresponding heading.<br>
 Found headings are also altered to display a link back to the ~ToC.
 <p/>
@@ -22,21 +23,34 @@ It searches for the HTML headings (`h1` to `h6` tags) which are converted to ~To
 Using the macro in a transcluded tiddler will affect (location and parameters) the ~ToC in the parent tiddler.
 
 
-! Usage
-The plugin automatically processes rendered tiddlers.
-
+! Configuration
+<!-- Unset the 'width:100%' style set on table and table inputs when tiddler is displayed inside the plugin details tab. -->
+<style>
+  table.unset-width, table.unset-width input {width: unset;}
+</style>
+<!-- Note: as documented, don't use 'edit' widget from whithin the tiddler being updated (focus is lost when tiddler is re-rendered) -->
+<table class="unset-width">
+  <tr><th align="left">Title filter:</th><td><$edit-text tiddler="$:/config/tiddler-toc/settings" field="ttoc_title_filter" default="^(?!\$:)" size="60"/></td></tr>
+  <tr><th align="left">Minimum entries:</th><td><$edit-text tiddler="$:/config/tiddler-toc/settings" field="ttoc_min_entries" default="2" size="4"/></td></tr>
+</table>
+Note: don't forget to save (and reload) for changes to be applied.
 
 !! Parameters
 The following configuration parameters are available:
 
-* [[title-filter|$:/config/tiddler-toc/title-filter]]: regular expression a tiddler title has to match to generate its ~ToC
+* Title filter: regular expression a tiddler title has to match to generate its ~ToC
 ** the default is to exclude system tiddlers (title starting with `$:`)
-* [[min-entries|$:/config/tiddler-toc/min-entries]]: minimum number of entries needed to display the ~ToC
-** can be specified as macro parameter
+* Minimum entries: minimum number of entries needed to display the ~ToC
+** can be specified as macro `min-entries` parameter
 ** default value is `2`
 
+
+! Usage
+The plugin automatically processes rendered tiddlers.
+
+
 !! Macro
-The ''tiddler-toc'' macro can be used to force ~ToC generation (regardless of `title-filter`) at the given location, and override the default `min-entries`.
+The ''tiddler-toc'' macro can be used to force ~ToC generation (regardless of title filter) at the given location, and override the default `min-entries`.
 
 
 !! Example

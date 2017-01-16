@@ -1,6 +1,6 @@
-created: 20161229164449975
-modified: 20161229164449975
+created: 20170111224404459
+modified: 20170111224404459
 title: $:/config/tiddler-toc/settings
 ttoc_min_entries: 2
-ttoc_title_filter: ^(?!$:)
+ttoc_title_filter: ^(?!\$:)
 

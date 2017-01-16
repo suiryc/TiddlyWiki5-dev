@@ -14,7 +14,7 @@ var hTag = /^h([1-6])$/i;
 var CONFIG_TIDDLER_TOC_SETTINGS_TIDDLER = "$:/config/tiddler-toc/settings";
 var CONFIG_TIDDLER_TOC_SETTINGS_DEFAULT = {
   min_entries: 2,
-  title_filter: "^(?!\$:)"
+  title_filter: "^(?!\\$:)"
 }
 
 var tocSettings = CONFIG_TIDDLER_TOC_SETTINGS_DEFAULT;

@@ -2,6 +2,13 @@ title: $:/plugins/cyrius/tiddler-toc/history
 
 <<tiddler-toc>>
 
+!! v2.1.1 (2017-01-11)
+
+Fixes:
+
+* correct default value for `title-filter` setting
+
+
 !! v2.1.0 (2016-12-29)
 
 Fixes:

@@ -44,7 +44,7 @@ TranscludeWidget.prototype.render = function(parent, nextSibling) {
 }
 
 
-// Sets fiels to a given tiddler.
+// Sets fields to a given tiddler.
 function setFields(title, fields, fieldPrefix, ifChanged) {
   if (fieldPrefix) {
     var newFields = {};
@@ -70,7 +70,7 @@ function setFields(title, fields, fieldPrefix, ifChanged) {
   }
 }
 
-// Get a field value from a tiddler fields.
+// Gets a field value from a tiddler fields.
 function getField(fields, field, def) {
   return (fields[field] !== undefined) ? fields[field] : def;
 }
@@ -309,7 +309,14 @@ function buildToC(node) {
       // have to go up
       while (headingLevel <= --currentLevel) {
         if (levelsUsed[currentLevel] > 0) {
-          headingsLevel = headingsLevel.parentNode.parentNode;
+          // Go to the parent 'level' node, or the 'entries' one (top-level).
+          // Usually is 'parentNode.parentNode' (because the parent should be
+          // a ToC entry). But sometimes (levels skipped, like h1 -> h3 -> h2)
+          // the parent already is the upper level.
+          headingsLevel = headingsLevel.parentNode;
+          while (!$tw.utils.hasClass(headingsLevel, "tw_ttoc_level") && !$tw.utils.hasClass(headingsLevel, "tw_ttoc_entries")) {
+            headingsLevel = headingsLevel.parentNode;
+          }
           headingId = headingId.split(".");
           headingId.pop();
           headingId = headingId.join(".");

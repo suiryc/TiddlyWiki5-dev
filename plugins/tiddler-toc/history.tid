@@ -2,6 +2,13 @@ title: $:/plugins/cyrius/tiddler-toc/history
 
 <<tiddler-toc>>
 
+!! v2.1.2 (2018-10-20)
+
+Fixes:
+
+* handle case where some heading levels are skipped (`h1` -> `h3` -> `h2`), to properly indent entries in ~ToC
+
+
 !! v2.1.1 (2017-01-11)
 
 Fixes:

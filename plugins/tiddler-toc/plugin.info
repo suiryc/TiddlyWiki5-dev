@@ -2,7 +2,7 @@
   "title": "$:/plugins/cyrius/tiddler-toc",
   "description": "Tiddler's Table of Contents",
   "author": "Julien Coloos",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "core-version": ">=5.0.0",
   "source": "http://julien.coloos.free.fr/TiddlyWiki5-dev/",
   "plugin-type": "plugin",
